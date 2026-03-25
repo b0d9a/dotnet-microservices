@@ -1,0 +1,70 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - microservices
+
+  auth-service:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "5001:80"
+    environment:
+      - MONGODB_CONNECTION=mongodb://mongodb:27017
+      - JWT_SECRET=SuperSecretKey_ChangeInProd_2024!
+      - JWT_ISSUER=kursovaya
+      - JWT_AUDIENCE=kursovaya
+    depends_on:
+      - mongodb
+    networks:
+      - microservices
+
+  user-service:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "5002:80"
+    environment:
+      - MONGODB_CONNECTION=mongodb://mongodb:27017
+      - JWT_SECRET=SuperSecretKey_ChangeInProd_2024!
+      - JWT_ISSUER=kursovaya
+      - JWT_AUDIENCE=kursovaya
+    depends_on:
+      - mongodb
+    networks:
+      - microservices
+
+  api-gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5000:80"
+    environment:
+      - JWT_SECRET=SuperSecretKey_ChangeInProd_2024!
+      - JWT_ISSUER=kursovaya
+      - JWT_AUDIENCE=kursovaya
+      - AUTH_SERVICE_URL=http://auth-service:80
+      - USER_SERVICE_URL=http://user-service:80
+    depends_on:
+      - auth-service
+      - user-service
+    networks:
+      - microservices
+
+volumes:
+  mongo_data:
+
+networks:
+  microservices:
+    driver: bridge
