@@ -7,7 +7,7 @@
     <!-- COM visibility: makes the assembly usable as a COM server -->
     <AssemblyName>MathComLib</AssemblyName>
     <RootNamespace>MathComLib</RootNamespace>
-    <EnableComHosting>true</EnableComHosting>
+    <EnableComHosting Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'=='True'">true</EnableComHosting>
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
