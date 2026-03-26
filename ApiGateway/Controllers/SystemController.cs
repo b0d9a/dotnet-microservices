@@ -14,13 +14,23 @@ namespace ApiGateway.Controllers;
 
 [ApiController]
 [Route("system")]
-[Authorize]
+// [Authorize]
 public class SystemController : ControllerBase
 {
     // ── PInvoke: память (GlobalMemoryStatusEx) ────────────────────────────────
     [HttpGet("info")]
     public IActionResult GetSystemInfo()
     {
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows))
+            return Ok(new
+            {
+                source    = "Win32 API — kernel32.dll GlobalMemoryStatusEx (PInvoke)",
+                note      = "P/Invoke is a Windows-only feature. This endpoint requires Windows OS to call kernel32.dll.",
+                platform  = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                timestamp = DateTime.UtcNow,
+            });
+
         try
         {
             var info = Win32Memory.GetMemoryInfo();
@@ -48,6 +58,16 @@ public class SystemController : ControllerBase
     [HttpGet("cpu")]
     public IActionResult GetCpuInfo()
     {
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows))
+            return Ok(new
+            {
+                source    = "Win32 API — kernel32.dll GetSystemInfo (PInvoke)",
+                note      = "P/Invoke is a Windows-only feature. This endpoint requires Windows OS to call kernel32.dll.",
+                platform  = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                timestamp = DateTime.UtcNow,
+            });
+
         try
         {
             var cpu = Win32Memory.GetCpuInfo();
